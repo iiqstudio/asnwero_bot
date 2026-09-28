@@ -63,7 +63,7 @@ def build_router(storage: Storage, model_router: ProviderRouter, settings: Setti
         try:
             await message.bot.send_message(
                 message.from_user.id,
-                f"Взял сообщение из группы:\n\n{preview(incoming.text)}\n\nМожно сразу выбрать тон или добавить короткий контекст.",
+                f"Взял сообщение из группы:\n\n{preview(incoming.text)}\n\nКак ответить?",
                 reply_markup=intake_keyboard(),
             )
         except (TelegramBadRequest, TelegramForbiddenError):
@@ -152,7 +152,7 @@ def build_router(storage: Storage, model_router: ProviderRouter, settings: Setti
             return
         await storage.save_task(user_id, incoming.text, stage="tone")
         await message.answer(
-            f"Вижу сообщение:\n\n{preview(incoming.text)}\n\nМожно сразу выбрать тон или добавить короткий контекст.",
+            f"Вижу текст переписки:\n\n{preview(incoming.text)}\n\nКак ответить?",
             reply_markup=intake_keyboard(),
         )
 

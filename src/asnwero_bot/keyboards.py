@@ -16,7 +16,16 @@ def tone_keyboard() -> InlineKeyboardMarkup:
 def intake_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🎛️ Выбрать тон", callback_data="action:choose_tone")],
+            [
+                InlineKeyboardButton(text=f"🧱 {TONE_LABELS['firm']}", callback_data="tone:firm"),
+                InlineKeyboardButton(text=f"😄 {TONE_LABELS['funny']}", callback_data="tone:funny"),
+            ],
+            [
+                InlineKeyboardButton(text=f"🤝 {TONE_LABELS['constructive']}", callback_data="tone:constructive"),
+                InlineKeyboardButton(text=f"🔬 {TONE_LABELS['scientific']}", callback_data="tone:scientific"),
+            ],
+            [InlineKeyboardButton(text=f"🎯 {TONE_LABELS['short']}", callback_data="tone:short")],
+            [InlineKeyboardButton(text="✍️ Свой вариант", callback_data="tone:custom")],
             [InlineKeyboardButton(text="🧩 Добавить контекст", callback_data="action:add_context")],
             [InlineKeyboardButton(text="🆕 Новое сообщение", callback_data="action:new")],
         ]

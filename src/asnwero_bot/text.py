@@ -10,8 +10,12 @@ class IncomingText:
 
 
 def normalize_text(value: str, limit: int) -> str:
-    normalized = " ".join(value.replace("\r", "\n").split())
-    return normalized[:limit].strip()
+    lines = []
+    for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
+        cleaned = " ".join(line.split())
+        if cleaned:
+            lines.append(cleaned)
+    return "\n".join(lines)[:limit].strip()
 
 
 def extract_message_text(message: Message, limit: int) -> IncomingText | None:

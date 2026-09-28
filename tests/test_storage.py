@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from asnwero_bot.storage import Storage
+from asnwero_bot.text import normalize_text
 
 
 async def test_storage_saves_and_clears_task(tmp_path: Path):
@@ -29,3 +30,8 @@ async def test_storage_counts_recent_generations(tmp_path: Path):
     assert await storage.count_recent_generations(42) == 2
     assert await storage.count_recent_generations(7) == 0
 
+
+def test_normalize_text_preserves_dialogue_lines():
+    assert normalize_text("Аня: привет\n\nБорис: привет!   Как дела?", 200) == (
+        "Аня: привет\nБорис: привет! Как дела?"
+    )
