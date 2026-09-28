@@ -17,6 +17,14 @@ from asnwero_bot.text import extract_message_text, extract_reply_text, normalize
 logger = logging.getLogger(__name__)
 
 
+async def answer_callback(query: CallbackQuery) -> None:
+    try:
+        await query.answer()
+    except TelegramBadRequest as exc:
+        if "query is too old" not in str(exc):
+            raise
+
+
 def build_router(storage: Storage, model_router: ProviderRouter, settings: Settings) -> Router:
     router = Router()
 
@@ -69,7 +77,7 @@ def build_router(storage: Storage, model_router: ProviderRouter, settings: Setti
 
     @router.callback_query(lambda query: query.data and query.data.startswith("tone:"))
     async def choose_tone(query: CallbackQuery) -> None:
-        await query.answer()
+        await answer_callback(query)
         user_id = query.from_user.id
         task = await storage.get_task(user_id)
         if not task:
@@ -85,7 +93,7 @@ def build_router(storage: Storage, model_router: ProviderRouter, settings: Setti
 
     @router.callback_query(lambda query: query.data and query.data.startswith("action:"))
     async def result_action(query: CallbackQuery) -> None:
-        await query.answer()
+        await answer_callback(query)
         user_id = query.from_user.id
         action = query.data.split(":", 1)[1]
         task = await storage.get_task(user_id)
