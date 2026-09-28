@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -96,18 +97,43 @@ def validate_variants(items: list[str]) -> list[str]:
 
 
 def parse_json_variants(value: str) -> list[str]:
-    text = value.strip()
-    if text.startswith("```"):
-        text = text.strip("`")
-        if text.startswith("json"):
-            text = text[4:].strip()
+    text = strip_markdown_fence(value.strip())
+    parsed = parse_variants_payload(text)
+    if parsed is not None:
+        return parsed
+
+    array_match = re.search(r"\[[\s\S]*\]", text)
+    if array_match:
+        parsed = parse_variants_payload(array_match.group(0))
+        if parsed is not None:
+            return parsed
+    raise ProviderBadResponseError("provider did not return parseable variants")
+
+
+def strip_markdown_fence(text: str) -> str:
+    if not text.startswith("```"):
+        return text
+    lines = text.splitlines()
+    if lines and lines[0].startswith("```"):
+        lines = lines[1:]
+    if lines and lines[-1].strip() == "```":
+        lines = lines[:-1]
+    return "\n".join(lines).strip()
+
+
+def parse_variants_payload(text: str) -> list[str] | None:
     try:
         parsed = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise ProviderBadResponseError("provider did not return JSON") from exc
-    if not isinstance(parsed, list):
-        raise ProviderBadResponseError("provider JSON is not a list")
-    return validate_variants(parsed)
+    except json.JSONDecodeError:
+        return None
+    if isinstance(parsed, list):
+        return validate_variants(parsed)
+    if isinstance(parsed, dict):
+        for key in ("variants", "answers", "replies", "responses", "options"):
+            value = parsed.get(key)
+            if isinstance(value, list):
+                return validate_variants(value)
+    return None
 
 
 class GeminiProvider:
@@ -192,6 +218,35 @@ class OpenRouterProvider:
                 return validate_variants(parsed["variants"])
         except json.JSONDecodeError:
             pass
+        return parse_json_variants(content)
+
+
+class GroqProvider:
+    name = "groq"
+
+    def __init__(self, api_key: str, model: str, timeout: float) -> None:
+        self.api_key = api_key
+        self.model = model
+        self.timeout = timeout
+
+    async def generate(self, source_text: str, tone: str, context: str | None = None) -> list[str]:
+        if not self.api_key:
+            raise ProviderAuthError("missing Groq API key")
+        headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": build_prompt(source_text, tone, context)}],
+            "temperature": 0.8,
+            "max_completion_tokens": 700,
+        }
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload)
+        handle_status(response)
+        data = response.json()
+        try:
+            content = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ProviderBadResponseError("Groq response shape is invalid") from exc
         return parse_json_variants(content)
 
 

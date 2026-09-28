@@ -7,7 +7,7 @@ from aiogram.types import BotCommand, BotCommandScopeAllGroupChats, BotCommandSc
 
 from asnwero_bot.config import get_settings
 from asnwero_bot.handlers import build_router
-from asnwero_bot.models import GeminiProvider, OpenRouterProvider, ProviderRouter, XAIProvider
+from asnwero_bot.models import GeminiProvider, GroqProvider, OpenRouterProvider, ProviderRouter, XAIProvider
 from asnwero_bot.storage import Storage
 
 
@@ -41,6 +41,7 @@ async def run() -> None:
 
     providers = [
         GeminiProvider(settings.gemini_api_key, settings.gemini_model, settings.request_timeout_seconds),
+        GroqProvider(settings.groq_api_key, settings.groq_model, settings.request_timeout_seconds),
         OpenRouterProvider(
             settings.openrouter_api_key,
             settings.openrouter_model,

@@ -1,6 +1,6 @@
 import pytest
 
-from asnwero_bot.models import ProviderAuthError, ProviderRouter, TemporaryProviderError
+from asnwero_bot.models import ProviderAuthError, ProviderRouter, TemporaryProviderError, parse_json_variants
 
 
 class FakeProvider:
@@ -51,3 +51,8 @@ async def test_router_raises_when_all_providers_fail():
     with pytest.raises(TemporaryProviderError):
         await router.generate("hello", "short")
 
+
+def test_parse_json_variants_accepts_common_wrappers():
+    assert parse_json_variants('{"variants": ["one", "two", "three"]}') == ["one", "two", "three"]
+    assert parse_json_variants('```json\n["one", "two", "three"]\n```') == ["one", "two", "three"]
+    assert parse_json_variants('Here: ["one", "two", "three"]') == ["one", "two", "three"]
