@@ -23,6 +23,39 @@ asnwero-bot
 python -m asnwero_bot
 ```
 
+## Деплой на Bothost
+
+Bothost деплоит проект из Git. Репозиторий уже содержит нужные для хостинга файлы:
+
+- `main.py` — точка входа, которую Bothost найдет автоматически.
+- `requirements.txt` — зависимости для установки через pip.
+- `DATABASE_PATH=/app/data/bot.sqlite3` — рекомендуемый путь для SQLite на Bothost, чтобы база сохранялась между обновлениями.
+
+Поля при создании бота:
+
+- Название: `asnwero_bot`
+- Платформа: `Telegram`
+- Библиотека/шаблон: `Python / Aiogram`
+- Bot Token: токен из BotFather
+- Git URL: `https://github.com/iiqstudio/asnwero_bot.git`
+- Ветка: `main`
+- Главный файл: можно оставить пустым или указать `main.py`
+
+Переменные окружения для панели:
+
+```env
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-flash-latest
+GROQ_API_KEY=...
+GROQ_MODEL=openai/gpt-oss-20b
+OPENROUTER_API_KEY=...
+OPENROUTER_MODEL=openrouter/free
+ALLOW_PAID_MODELS=false
+DATABASE_PATH=/app/data/bot.sqlite3
+```
+
+Bothost сам пробрасывает Telegram-токен как `BOT_TOKEN`/`TELEGRAM_BOT_TOKEN`; код поддерживает оба имени.
+
 ## Где взять ключи
 
 - Telegram bot token: открыть [@BotFather](https://t.me/botfather), выполнить `/newbot`, скопировать token в `TELEGRAM_BOT_TOKEN`. Официальная справка: [Telegram Bot tutorial](https://core.telegram.org/bots/tutorial).

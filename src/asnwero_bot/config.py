@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     telegram_bot_token: str = Field(default="", alias="TELEGRAM_BOT_TOKEN")
+    bot_token: str = Field(default="", alias="BOT_TOKEN")
+    api_token: str = Field(default="", alias="API_TOKEN")
     gemini_api_key: str = Field(default="", alias="GEMINI_API_KEY")
     gemini_model: str = Field(default="gemini-flash-latest", alias="GEMINI_MODEL")
     groq_api_key: str = Field(default="", alias="GROQ_API_KEY")
@@ -29,9 +31,15 @@ class Settings(BaseSettings):
     task_ttl_hours: int = Field(default=24, alias="TASK_TTL_HOURS")
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
+    @model_validator(mode="after")
+    def fill_telegram_token_aliases(self) -> "Settings":
+        if not self.telegram_bot_token:
+            self.telegram_bot_token = self.bot_token or self.api_token
+        return self
+
     def validate_runtime(self) -> None:
         if not self.telegram_bot_token:
-            raise ValueError("TELEGRAM_BOT_TOKEN is required")
+            raise ValueError("TELEGRAM_BOT_TOKEN or BOT_TOKEN is required")
 
 
 @lru_cache

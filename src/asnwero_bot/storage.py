@@ -25,6 +25,7 @@ class Storage:
 
     async def init(self) -> None:
         async with self._lock:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
             with self._connect() as conn:
                 conn.execute(
                     """
@@ -137,4 +138,3 @@ class Storage:
 
 def _now() -> datetime:
     return datetime.now(UTC)
-
